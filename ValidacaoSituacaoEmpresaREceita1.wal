@@ -1,0 +1,28 @@
+²defVar --name arqExecel --type Excel
+defVar --name tabelaExcel --type DataTable
+defVar --name cont --type Numeric
+defVar --name cnpj --type String
+defVar --name MENSAGEM --type Boolean
+defVar --name imgCaptcha --type Image
+defVar --name TextoCaptcha --type String
+defVar --name Error --type String
+defVar --name situacaoEmpresa --type String
+defVar --name pathFile --type Excel
+defVar --name value --type Boolean
+excelOpen --file "C:\\Users\\adson.souza\\Desktop\\RPA\\WDG IBM\\cnpj.xlsx" --savechanges  arqExecel=value
+excelGetTable --file ${arqExecel} --getfirstsheet  --fromrow 1 --fromcolumn 1 --tocolumn 2 --hasheaders  tabelaExcel=value
+for --variable ${cont} --from 1 --to ${tabelaExcel.Rows} --step 1
+	mapTableRow --dataTable ${tabelaExcel} --row ${cont} --mappings "number=2=${cnpj}"
+	webStart --name GetCPF --type "Chrome"
+	webNavigate --url "https://servicos.receita.fazenda.gov.br/servicos/cnpjreva/cnpjreva_solicitacao.asp"
+	webSolveCaptcha --auto  --timeout "00:00:50" value=value
+	logMessage --message "${value}" --type "Info"
+	webSet --value "${TextoCaptcha}" --selector "Id" --id ctl00_conteudoPaginaPlaceHolder_filtroTabContainer_filtroEmitirCertidaoTabPanel_imagemDinamicaTextBox
+	webSet --value "${cnpj}" --selector "XPath" --xpath "//*[@id=\"cnpj\"]" MENSAGEM=value
+	webClick --selector "XPath" --xpath "//*[@id=\"frmConsulta\"]/div[3]/div/button[1]" --timeout "00:00:00.0050000" MENSAGEM=value
+	webWaitElement --selector "XPath" --xpath "//*[@id=\"principal\"]/table[1]/tbody/tr/td/table[12]/tbody/tr/td[1]" --timeout "00:00:10"
+	webGet --selector "XPath" --xpath "//*[@id=\"principal\"]/table[1]/tbody/tr/td/table[12]/tbody/tr/td[1]" situacaoEmpresa=value
+	logMessage --message "${situacaoEmpresa}" --type "Info"
+	webClose --name GetCPF --leavebrowseropen 
+next
+excelClose --file ${arqExecel}*	20.12.4.0

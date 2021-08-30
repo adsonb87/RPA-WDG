@@ -1,0 +1,25 @@
+«defVar --name fromCurrency --type String
+defVar --name toCurrency --type String
+defVar --name chromeInstance --type String --value chromeInstance
+defVar --name quotation --type String --value quotation
+defVar --name isLoading --type Boolean
+defVar --name currentDateTime --type DateTime
+defVar --name myDocs --type String --value myDocs
+inputBox --title "From Currency" --prompt "Type Here" --value BRL fromCurrency=value
+inputBox --title "To Currency" --prompt "Type Here" --value USD toCurrency=value
+webStart --name "${chromeInstance}" --type "Chrome"
+webNavigate --url "https://www1.oanda.com/lang/pt/currency/converter/"
+webSet --value "${fromCurrency}Introduza para procurar..." --selector "Id" --id quote_currency_input --simulatehuman 
+webSendKeys --value "{ENTER}" --selector "Id" --id quote_currency_input
+webSet --value "${toCurrency}Introduza para procurar..." --selector "Id" --id base_currency_input --simulatehuman 
+webSendKeys --value "{ENTER}" --selector "Id" --id base_currency_input
+webWaitElement --selector "Id" --id preloader --timeout "00:00:05" isLoading=value
+while --left "${isLoading}" --operator "Is_True"
+	webWaitElement --selector "Id" --id preloader --timeout "00:00:05" isLoading=value
+endWhile
+webGet --selector "Id" --id base_amount_input quotation=value
+logMessage --message "${quotation}" --type "Info"
+getCurrentDateAndTime --localorutc "LocalTime" currentDateTime=value
+getSpecialFolder --folder "Desktop" myDocs=value
+writeToFile --value "${currentDateTime} - 1 ${fromCurrency} is equals to ${quotation} ${toCurrency}" --file "${myDocs}\\RPA\\WDG IBM\\Teste\\teste.txt" --encoding "Default" --writeasnewline 
+webClose --name "${chromeInstance}"*	20.12.4.0
